@@ -1,9 +1,15 @@
 package com.zyla.assignment;
 
+import com.zyla.assignment.mapper.JsonProcessingExceptionMapper;
 import com.zyla.assignment.resources.PhoneNumberResource;
+import com.zyla.assignment.service.PhoneNumberService;
 import io.dropwizard.Application;
+import io.dropwizard.db.PooledDataSourceFactory;
+import io.dropwizard.jdbi.DBIFactory;
+import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.skife.jdbi.v2.DBI;
 
 public class AllotPhoneNumbersApplication extends Application<AllotPhoneNumbersConfiguration> {
 
@@ -18,13 +24,26 @@ public class AllotPhoneNumbersApplication extends Application<AllotPhoneNumbersC
 
     @Override
     public void initialize(final Bootstrap<AllotPhoneNumbersConfiguration> bootstrap) {
-        // TODO: application initialization
+        bootstrap.addBundle(new MigrationsBundle<AllotPhoneNumbersConfiguration>() {
+            @Override
+            public PooledDataSourceFactory getDataSourceFactory(AllotPhoneNumbersConfiguration configuration) {
+                return configuration.getDataSourceFactory();
+            }
+        });
     }
 
     @Override
     public void run(final AllotPhoneNumbersConfiguration configuration,
                     final Environment environment) {
-        PhoneNumberResource phoneNumberResource = new PhoneNumberResource();
-        environment.jersey().register(phoneNumberResource);
+
+        // Set up DB
+        final DBIFactory factory = new DBIFactory();
+        final DBI jdbi = factory.build(environment, configuration.getDataSourceFactory(), "sqlite");
+
+        // Add resources
+        environment.jersey().register(new PhoneNumberResource(jdbi.onDemand(PhoneNumberService.class)));
+
+        // Exception Mappers
+        environment.jersey().register(new JsonProcessingExceptionMapper(environment.metrics()));
     }
 }

@@ -1,23 +1,26 @@
 package com.zyla.assignment.resources;
 
-import com.zyla.assignment.api.PhoneNumber;
+import com.zyla.assignment.APIResponseRepresentation;
+import com.zyla.assignment.model.PhoneNumber;
+import com.zyla.assignment.service.PhoneNumberService;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("allotnumber")
+@Path("/allotnumber")
 @Produces(MediaType.APPLICATION_JSON)
 public class PhoneNumberResource {
-    @GET
-    public PhoneNumber generateNumber() {
-        return new PhoneNumber("1111111111");
+    private static final String SUCCESS = "success";
+    private final PhoneNumberService phoneNumberService;
+
+    public PhoneNumberResource(PhoneNumberService phoneNumberService) {
+        this.phoneNumberService = phoneNumberService;
     }
 
     @POST
-    public PhoneNumber allotCustomNumber() {
-        return new PhoneNumber("9989989988");
+    public APIResponseRepresentation<PhoneNumber> allotCustomNumber(final PhoneNumber customNumber) {
+        return new APIResponseRepresentation<>(SUCCESS, phoneNumberService.generateNumber(customNumber));
     }
 }

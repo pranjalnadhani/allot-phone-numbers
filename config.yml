@@ -1,5 +1,11 @@
 server:
   rootPath: /api/*
+database:
+  driverClass: org.sqlite.JDBC
+  url: jdbc:sqlite:dev.db
+  properties:
+    charSet: UTF-8
+  validationQuery: "/* MyService Health Check */ SELECT 1"
 logging:
   level: INFO
   loggers:
